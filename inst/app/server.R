@@ -37,31 +37,38 @@ server <- function(input, output, session) {
 #   })
 #
 
-  shared_dat <- SharedData$new(indf) #enhDf, key=~key)
+  enhDf = reactive({
+   indf$strat = colData(sce)[[input$pickedStrat]]
+   indf$key = 1:nrow(indf)
+   indf
+   })  
+
+
+  shared_dat <- SharedData$new(enhDf) #enhDf, key=~key)
 
   output$scatter1 <- renderD3scatter({
     methx = paste0(input$meth1, input$topx)
     methy = paste0(input$meth1, input$topy)
     d3scatter(shared_dat, fmlist[[input$meth1]][[methx]], 
-            fmlist[[input$meth1]][[methy]], ~donor_id, width = "100%")
+            fmlist[[input$meth1]][[methy]], ~strat, width = "100%")
   })
   output$scatter2 <- renderD3scatter({
     methx = paste0(input$meth2, input$topx)
     methy = paste0(input$meth2, input$topy)
     d3scatter(shared_dat, fmlist[[input$meth2]][[methx]], 
-            fmlist[[input$meth2]][[methy]], ~donor_id, width = "100%")
+            fmlist[[input$meth2]][[methy]], ~strat, width = "100%")
   })
   output$scatter3 <- renderD3scatter({
     methx = paste0(input$meth1, input$botx)
     methy = paste0(input$meth1, input$boty)
     d3scatter(shared_dat, fmlist[[input$meth1]][[methx]], 
-            fmlist[[input$meth1]][[methy]], ~donor_id, width = "100%")
+            fmlist[[input$meth1]][[methy]], ~strat, width = "100%")
   })
   output$scatter4 <- renderD3scatter({
     methx = paste0(input$meth2, input$botx)
     methy = paste0(input$meth2, input$boty)
     d3scatter(shared_dat, fmlist[[input$meth2]][[methx]], 
-            fmlist[[input$meth2]][[methy]], ~donor_id, width = "100%")
+            fmlist[[input$meth2]][[methy]], ~strat, width = "100%")
   })
   output$scatter5 <- renderD3scatter({
     methx = paste0(input$meth1, input$topx)
@@ -115,8 +122,7 @@ server <- function(input, output, session) {
    observe({
                     if(input$btnSend > 0)
                         isolate({
-                           metadata(se)$"abc" = "def"
-                           stopApp(returnValue=se)
+                           stopApp(returnValue=0)
                         })  
            })  
 

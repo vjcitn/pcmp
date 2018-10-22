@@ -10,18 +10,19 @@
 
 ui <- fluidPage(
  sidebarPanel(width=2,
-   helpText("abc"),
-   selectInput("meth1", "method1", c("PC", "UM", "TS"), "PC"),
-   selectInput("meth2", "method1", c("PC", "UM", "TS"), "TS"),
+   helpText("pcmp is a prototype of using crosstalk to survey different dimension reduction procedures for SingleCellExperiment data.  Different methods are used in the left and right columns, and different projection components can are used in the top and bottom rows, as selected using the method/top/bot controls below.  See the 'about' tab for more information."),
+   selectInput("pickedStrat", "stratby", discreteColdVars(sce), "donor_id"),
+   selectInput("meth1", "method 1", c("PC", "UM", "TS"), "PC"),
+   selectInput("meth2", "method 2", c("PC", "UM", "TS"), "TS"),
    numericInput("topx", "top x", 1, min=1, max=ncomp-1, step=1),
    numericInput("topy", "top y", 2, min=2, max=ncomp, step=1),
-   numericInput("botx", "bot x", 1, min=1, max=ncomp-1, step=1),
-   numericInput("boty", "bot y", 2, min=2, max=ncomp, step=1),
+   numericInput("botx", "bot x", 2, min=1, max=ncomp-1, step=1),
+   numericInput("boty", "bot y", 3, min=2, max=ncomp, step=1),
    actionButton("btnSend", "Stop app")
    ),
  mainPanel(
   tabsetPanel(
-  tabPanel("by donor",
+  tabPanel("scatter",
    fluidRow(
      column(6, d3scatterOutput("scatter1")),
      column(6, d3scatterOutput("scatter2"))
@@ -31,27 +32,10 @@ ui <- fluidPage(
      column(6, d3scatterOutput("scatter4"))
      )
    ), # end panel
-  tabPanel("by region",
-   fluidRow(
-     column(6, d3scatterOutput("scatter5")),
-     column(6, d3scatterOutput("scatter6"))
-     ),
-    fluidRow(
-     column(6, d3scatterOutput("scatter7")),
-     column(6, d3scatterOutput("scatter8"))
-     )
-   ), # end panel
-  tabPanel("by subregion",
-   fluidRow(
-     column(6, d3scatterOutput("scatter9")),
-     column(6, d3scatterOutput("scatter10"))
-     ),
-    fluidRow(
-     column(6, d3scatterOutput("scatter11")),
-     column(6, d3scatterOutput("scatter12"))
-     )
-   ) # end panel
-  )
+  tabPanel("about",
+   helpText("pcmp is a prototype of using crosstalk to survey different dimension reduction procedures for SingleCellExperiment data.  Different methods are used in the left and right columns, and different projection components can are used in the top and bottom rows, as selected using the method/top/bot controls below.  The ColorBy button will recolor points according to discrete covariates in the colData of the input object."),
+   helpText("The initial example uses the Allen Brain Atlas RNA-seq data on anterior cingulate cortex (ACC) and primary visual cortex (VIS) brain regions.  Strata were formed using donor (3 levels) and region (2 levels) and 300 cells were sampled at random in each stratum.")
  )
- )
- 
+)
+)
+) 
