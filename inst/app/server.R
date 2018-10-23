@@ -70,53 +70,24 @@ server <- function(input, output, session) {
     d3scatter(shared_dat, fmlist[[input$meth2]][[methx]], 
             fmlist[[input$meth2]][[methy]], ~strat, width = "100%")
   })
-  output$scatter5 <- renderD3scatter({
-    methx = paste0(input$meth1, input$topx)
-    methy = paste0(input$meth1, input$topy)
-    d3scatter(shared_dat, fmlist[[input$meth1]][[methx]], 
-            fmlist[[input$meth1]][[methy]], ~brain_region, width = "100%")
-  })
-  output$scatter6 <- renderD3scatter({
-    methx = paste0(input$meth2, input$topx)
-    methy = paste0(input$meth2, input$topy)
-    d3scatter(shared_dat, fmlist[[input$meth2]][[methx]], 
-            fmlist[[input$meth2]][[methy]], ~brain_region, width = "100%")
-  })
-  output$scatter7 <- renderD3scatter({
-    methx = paste0(input$meth1, input$botx)
-    methy = paste0(input$meth1, input$boty)
-    d3scatter(shared_dat, fmlist[[input$meth1]][[methx]], 
-            fmlist[[input$meth1]][[methy]], ~brain_region, width = "100%")
-  })
-  output$scatter8 <- renderD3scatter({
-    methx = paste0(input$meth2, input$botx)
-    methy = paste0(input$meth2, input$boty)
-    d3scatter(shared_dat, fmlist[[input$meth2]][[methx]], 
-            fmlist[[input$meth2]][[methy]], ~brain_region, width = "100%")
-  })
-  output$scatter9 <- renderD3scatter({
-    methx = paste0(input$meth1, input$topx)
-    methy = paste0(input$meth1, input$topy)
-    d3scatter(shared_dat, fmlist[[input$meth1]][[methx]], 
-            fmlist[[input$meth1]][[methy]], ~brain_subregion, width = "100%")
-  })
-  output$scatter10 <- renderD3scatter({
-    methx = paste0(input$meth2, input$topx)
-    methy = paste0(input$meth2, input$topy)
-    d3scatter(shared_dat, fmlist[[input$meth2]][[methx]], 
-            fmlist[[input$meth2]][[methy]], ~brain_subregion, width = "100%")
-  })
-  output$scatter11 <- renderD3scatter({
-    methx = paste0(input$meth1, input$botx)
-    methy = paste0(input$meth1, input$boty)
-    d3scatter(shared_dat, fmlist[[input$meth1]][[methx]], 
-            fmlist[[input$meth1]][[methy]], ~brain_subregion, width = "100%")
-  })
-  output$scatter12 <- renderD3scatter({
-    methx = paste0(input$meth2, input$botx)
-    methy = paste0(input$meth2, input$boty)
-    d3scatter(shared_dat, fmlist[[input$meth2]][[methx]], 
-            fmlist[[input$meth2]][[methy]], ~brain_subregion, width = "100%")
+
+output$summary <- DT::renderDataTable({
+    df <- shared_dat$data(withSelection = TRUE) %>%
+      filter(selected_ | is.na(selected_)) %>%
+      mutate(selected_ = NULL)
+    sel=rep(0, ncol(sce))
+    names(sel) = colnames(sce)
+    sel[df$seq_name] = 1
+    mm = model.matrix(~sel, data=data.frame(sel=sel))
+    library(limma)
+  print(paste0("start lmFit", date()))
+    X = assay(sce)
+    f1 = lmFit(X, mm)
+    ef1 = eBayes(f1)
+  print(paste0("finish lmFit", date()))
+    options(digits=3)
+    tt = topTable(ef1, 2, n=20)
+    DT::formatRound(datatable(tt), 2:7, digits=3)
   })
 
    observe({
