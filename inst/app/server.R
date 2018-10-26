@@ -3,8 +3,9 @@ server <- function(input, output, session) {
   library(pcmp)
   library(d3scatter)
   library(crosstalk)
-
-  sce = pcmp::sce300xx  # HARDWIRED!!! PROOF OF CONCEPT!
+# hardwired for shinyapps.io -- must keep code
+# in sync with more flexible pcmpApp
+  sce = pcmp::sce300xx 
   rd = reducedDims(sce)
   nrd = names(rd)
   ncomps = vapply(rd, ncol, numeric(1))
@@ -80,12 +81,13 @@ output$summary <- DT::renderDataTable({
     sel[df$seq_name] = 1
     mm = model.matrix(~sel, data=data.frame(sel=sel))
     library(limma)
-  print(paste0("start lmFit", date()))
+   showNotification(paste("starting table processing", date()), id="limnote")
     X = log(assay(sce)+1)
     f1 = lmFit(X, mm)
     ef1 = eBayes(f1)
   print(paste0("finish lmFit", date()))
     options(digits=3)
+
     tt = topTable(ef1, 2, n=20)
     if (!(".pcmpSelNum" %in% ls(.GlobalEnv, all=TRUE))) assign(".pcmpSelNum", 1, .GlobalEnv)
       else assign(".pcmpSelNum", .GlobalEnv$.pcmpSelNum + 1, .GlobalEnv)
@@ -94,7 +96,9 @@ output$summary <- DT::renderDataTable({
     tt = cbind(tt, selnum=.GlobalEnv$.pcmpSelNum[1])
     if (!(".pcmpTab" %in% ls(.GlobalEnv, all=TRUE))) assign(".pcmpTab", tt, .GlobalEnv)
       else assign(".pcmpTab", rbind(.GlobalEnv$.pcmpTab, tt), .GlobalEnv)
-    DT::formatRound(DT::datatable(tt), 2:7, digits=3)
+    ans = DT::formatRound(DT::datatable(tt), 2:7, digits=3)
+   removeNotification(id="limnote")
+    ans
   })
 
    observe({

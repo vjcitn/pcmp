@@ -4,7 +4,11 @@
 \alias{defaultProjectors}
 \title{schematize a sequence of projection methods}
 \usage{
-defaultProjectors()
+defaultProjectors(warmdim = 15)
+}
+\arguments{
+\item{warmdim}{numeric(1) defaults to 15 -- defines the dimension
+reduction using irlba()$u for 'warming up' prior to UMAP or t-SNE runs}
 }
 \value{
 a list with two components, 'projectors'
@@ -21,7 +25,7 @@ schematize a sequence of projection methods
 }
 \note{
 The default sequence is irlba::irlba, umap::umap,
-Rtsne::Rtsne
+Rtsne::Rtsne; see the note on `warmdim` parameter.
 }
 \examples{
 defaultProjectors
