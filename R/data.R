@@ -12,3 +12,14 @@
 #' })
 #' pcmp::sce300xx
 "sce300xx"
+
+#' collection of 6 selections from sce300xx
+#' @format PcmpSels instance
+#' @examples
+#' data(acc4vis2)
+#' data(sce300xx)
+#' rd = reducedDims(sce300xx)
+#' plot(rd$TS[,3], rd$TS[,4])
+#' inds1 = acc4vis2@cellSets[[1]]
+#' points(rd$TS[ inds1, 3], rd$TS[ inds1, 4], pch=19, col="red")
+"acc4vis2"
