@@ -121,6 +121,7 @@ addProjections = function(sce, ncomp=4, tx=function(x) log(x+1),
 #' irlba::irlba, umap::umap, and Rtsne::Rtsne respectively.  Function
 #' will delete .pcmpTab, .pcmpSelNum, .pcmpSelCells from .GlobalEnv
 #' if found, so that it can assemble information on selections.
+#' @return will return an instance of PcmpSels
 #' @export
 pcmpApp = function(sce) {
  stores = c(".pcmpTab", ".pcmpSelNum", ".pcmpSelCells")
@@ -279,6 +280,7 @@ output$summary <- DT::renderDataTable({
   } # end server
  tmp = runApp(list(ui=ui, server=server))
 #
- list(cells = .GlobalEnv$.pcmpSelCells, limmaTab=.GlobalEnv$.pcmpTab)
+ ans = list(cells = .GlobalEnv$.pcmpSelCells, limmaTab=.GlobalEnv$.pcmpTab)
+ new("PcmpSels", cellSets=ans$cells, geneTable=ans$limmaTab)
 }
 
