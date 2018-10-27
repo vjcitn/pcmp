@@ -10,6 +10,9 @@ pcmpApp(sce)
 \item{sce}{SingleCellExperiment instance with reducedDims populated
 with various candidates for projection from assay data --}
 }
+\value{
+will return an instance of PcmpSels
+}
 \description{
 Define a shiny app for comparing projections
 }

@@ -105,6 +105,7 @@ addProjections = function(sce, ncomp=4, tx=function(x) log(x+1),
   ans = lapply(seq_len(length(prs)), function(i) 
     projectors$retrievers[[i]](prs[[i]])
     )
+  names(ans) = names(projectors$retrievers)
   ini = reducedDims(sce)
   if (length(ini) == 0) reducedDims(sce) = SimpleList(ans)
   else reducedDims(sce) = c(ini, SimpleList(ans))
