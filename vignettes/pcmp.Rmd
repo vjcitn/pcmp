@@ -32,11 +32,11 @@ transcripts
 
 The basic interface has the following appearance:
 
-![Full front page after configuring methods and dimensions to display.](pcmpFull.png)
+![Full front page after configuring methods and dimensions to display.](pcmpFull.png =300x)
 
 A couple of motivations are visible in the following display:
 
 ![Cells are blurred if not selected.  Color is a measure of fraction of
 immature mRNA (average over all genes of ratio of count of intronic reads to total read count for each cell).  Cluster identified in dimensions 3,4 of UMAP projection
-is scattered in the analogous t-SNE projection.](motiv.png)
+is scattered in the analogous t-SNE projection.](motiv.png =100x)
 
