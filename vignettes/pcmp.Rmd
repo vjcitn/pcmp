@@ -32,7 +32,7 @@ transcripts
 
 The basic interface has the following appearance:
 
-![Full front page after configuring methods and dimensions to display.](pcmpfull.png)
+![Full front page after configuring methods and dimensions to display.](pcmpFull.png)
 
 A couple of motivations are visible in the following display:
 
