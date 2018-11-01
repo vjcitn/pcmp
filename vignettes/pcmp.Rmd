@@ -1,0 +1,42 @@
+---
+title: "pcmp: projection comparison utilities for scRNA-seq"
+author: "Vincent J. Carey, stvjc at channing.harvard.edu"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{pcmp: projection comparison utilities for scRNA-seq}
+  %\VignetteEncoding{UTF-8}
+output:
+  BiocStyle::html_document:
+    highlight: pygments
+    number_sections: yes
+    theme: united
+    toc: yes
+---
+
+# Introduction
+
+Visualization of single-cell RNA-seq data is supported in many
+software environments and tools.  pcmp was devised to address
+the following aims
+
+- use Rstudio's crosstalk to foster linked/brushable selections
+in multiple panels
+- record manual selections of clusters as lists of cells
+- provide some statistical information on expression patterns
+that distinguish selected clusters, and on expression-based sources
+of variation within clusters
+- for nuclear sequencing applications, support introduction and
+interpretation of measures of relative abundance of immature
+transcripts
+
+The basic interface has the following appearance:
+
+![Full front page after configuring methods and dimensions to display.](pcmpfull.png)
+
+A couple of motivations are visible in the following display:
+
+![Cells are blurred if not selected.  Color is a measure of fraction of
+immature mRNA (average over all genes of ratio of count of intronic reads to total read count for each cell).  Cluster identified in dimensions 3,4 of UMAP projection
+is scattered in the analogous t-SNE projection.](motiv.png)
+

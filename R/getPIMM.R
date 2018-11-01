@@ -1,4 +1,5 @@
 #' add the 'percent immature mRNA' estimates to a SingleCellExperiment
+#' @importFrom SummarizedExperiment assay
 #' @param exsce SingleCellExperiment with exon counts
 #' @param intsce SingleCellExperiment with intron counts
 #' @return SingleCellExperiment exsce with an additional 

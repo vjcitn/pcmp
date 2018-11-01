@@ -1,3 +1,6 @@
+pkgVersion = function() tail(strsplit(grep("Version", help(package = pcmp)$info[[1]], 
+    value = TRUE), " ")[[1]], 1)
+
 #' find discrete variables in colData
 #' @import SingleCellExperiment crosstalk d3scatter dplyr shiny
 #' @import Rtsne irlba umap methods
@@ -140,9 +143,9 @@ pcmpApp = function(sce) {
 # keep in sync with code in inst/app/ui.R
   ui <- fluidPage(
    sidebarPanel(width=2,
-     helpText("pcmp: crosstalk-based interactive graphics \
+     helpText(sprintf("pcmp %s: crosstalk-based interactive graphics \
 for dimension reduction in single-cell transcriptomics. \ 
-See the 'about' tab for more information."),
+See the 'about' tab for more information.", pkgVersion())),
      selectInput("pickedStrat", "stratby", discv, discv[1]),
      selectInput("meth1", "method left", nrd, nrd[1]),
      selectInput("meth2", "method right", nrd, nrd[2]),
