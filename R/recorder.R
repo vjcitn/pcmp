@@ -1,4 +1,6 @@
 #' organize record of selections in pcmp
+#' @importFrom graphics plot points
+#' @importFrom stats as.formula biplot prcomp
 #' @name PcmpSels
 #' @rdname PcmpSels
 #' @aliases PcmpSels-class
@@ -20,11 +22,20 @@ setMethod("show", "PcmpSels", function(object) {
  cat("  use cellSets(), geneTable() or replay() to extract information.\n")
 })
 
+#' extract list of cells selected
+#' @param x instance of PcmpSels
 #' @export cellSets
 setGeneric("cellSets", function(x)standardGeneric("cellSets"))
+
+#' @rdname cellSets
 setMethod("cellSets", "PcmpSels", function(x) x@cellSets)
+
+#' extract limma topTable
+#' @param x instance of PcmpSels
 #' @export geneTable
 setGeneric("geneTable", function(x)standardGeneric("geneTable"))
+
+#' @rdname geneTable
 setMethod("geneTable", "PcmpSels", function(x) x@geneTable)
 
 #' replay a selection by plotting the selected cells
