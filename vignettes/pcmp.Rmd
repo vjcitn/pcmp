@@ -32,11 +32,55 @@ transcripts
 
 The basic interface has the following appearance:
 
+<!--
 ![Full front page after configuring methods and dimensions to display.](pcmpFull.png){:height="500px"}
+-->
 
-A couple of motivations are visible in the following display:
+<img src="pcmpFull.png" height="500px"/>
 
-![Cells are blurred if not selected.  Color is a measure of fraction of
-immature mRNA (average over all genes of ratio of count of intronic reads to total read count for each cell).  Cluster identified in dimensions 3,4 of UMAP projection
-is scattered in the analogous t-SNE projection.](motiv.png =200x100)
+The input data are obtained from a SingleCellExperiment
+instance, in this case a
+stratified random sample of 1800 cells from the 
+Allen Brain Atlas single-nucleus RNA-seq repositories
+from the ACC (anterior cingulate cortex) and
+VIS (primary visual cortex) brain regions.
 
+The data are supplied in the pcmp package as the
+object `sce300xx`.
+The projections are retrieved from the reducedDims
+component of `sce300xx`, and **are not computed by pcmp**.  Each point 
+represents a single cell.  Points are colored using
+palettes determined by crosstalk, and the groupings are
+determined by the `stratby` control, which gives access to
+all 'discrete' variables in the colData of the input
+SingleCellExperiment.
+
+A couple of motivations for this app are visible in the following display,
+which was created by selecting a small group of mostly blue points
+in the lower part of dimensions 3,4 of the UMAP projection.  You
+can see dashed box boundaries on the left panel.  The color scheme
+is determined by the stratby variable, in this case PIMMquart,
+a labeling of cells based on the average
+value per cell (over all genes) of the fraction of reads mapping
+to introns.
+
+<img src="motiv.png" height="400px"/>
+
+Cells are blurred in all projections
+if not selected.  Color in this display is a measure of fraction of
+immature mRNA (average over all genes of ratio of count of intronic reads to total read count for each cell).  The cluster identified in dimensions 3,4 of UMAP projection
+is scattered in the analogous t-SNE projection.
+
+# Installation and execution
+
+The package can be installed using R 3.5 or above with the command
+```
+devtools::install_github("vjcitn/pcmp")`
+```
+
+After successful installation, use
+```
+library(pcmp)
+pcmpApp(sce300xx)
+```
+to work with the sample from the Allen Brain Atlas data.
