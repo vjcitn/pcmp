@@ -32,7 +32,7 @@ transcripts
 
 The basic interface has the following appearance:
 
-![Full front page after configuring methods and dimensions to display.](pcmpFull.png =400x300)
+![Full front page after configuring methods and dimensions to display.](pcmpFull.png){:height="500px"}
 
 A couple of motivations are visible in the following display:
 
