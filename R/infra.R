@@ -140,7 +140,9 @@ pcmpApp = function(sce) {
 # keep in sync with code in inst/app/ui.R
   ui <- fluidPage(
    sidebarPanel(width=2,
-     helpText("pcmp is a prototype of using crosstalk to survey different dimension reduction procedures for SingleCellExperiment data.  Different methods are used in the left and right columns, and different projection components can are used in the top and bottom rows, as selected using the method/top/bot controls below.  See the 'about' tab for more information."),
+     helpText("pcmp: crosstalk-based interactive graphics \
+for dimension reduction in single-cell transcriptomics. \ 
+See the 'about' tab for more information."),
      selectInput("pickedStrat", "stratby", discv, discv[1]),
      selectInput("meth1", "method left", nrd, nrd[1]),
      selectInput("meth2", "method right", nrd, nrd[2]),
@@ -165,8 +167,12 @@ pcmpApp = function(sce) {
     tabPanel("selTable",
      DT::dataTableOutput("summary")
      ),
+    tabPanel("accum",
+       helpText("Method and dimensions taken from bottom left panel"),
+       plotOutput("accum")
+        ),
     tabPanel("about",
-     helpText("pcmp is a prototype of using crosstalk to survey different dimension reduction procedures for SingleCellExperiment data.  Different methods are used in the left and right columns, and different projection components can are used in the top and bottom rows, as selected using the method/top/bot controls below.  The ColorBy button will recolor points according to discrete covariates in the colData of the input object."),
+     helpText("pcmp is crosstalk-based interactive graphics for surveying different dimension reduction procedures for data in SingleCellExperiment containers.  The reducedDims component must be populated with several reductions, each including at least 4 dimensions.   Different methods are used in the left and right columns, and different projection components can are used in the top and bottom rows, as selected using the method/top/bot controls below.  The ColorBy button will recolor points according to discrete covariates in the colData of the input object."),
      helpText("The initial example uses the Allen Brain Atlas RNA-seq data on anterior cingulate cortex (ACC) and primary visual cortex (VIS) brain regions.  Strata were formed using donor (3 levels) and region (2 levels) and 300 cells were sampled at random in each stratum.")
    )
   )
@@ -243,6 +249,12 @@ server <- function(input, output, session) {
     d3scatter(shared_dat, fmlist[[input$meth2]][[methx]], 
             fmlist[[input$meth2]][[methy]], ~strat, width = "100%")
   })
+ output$accum = renderPlot({
+ ans = list(cells = .GlobalEnv$.pcmpSelCells, limmaTab=.GlobalEnv$.pcmpTab)
+ tmp = new("PcmpSels", cellSets=ans$cells, geneTable=ans$limmaTab)
+ replay(pcmp::sce300xx, tmp, input$meth1, input$botx, input$boty) 
+ })
+    
 
 output$summary <- DT::renderDataTable({
     df <- shared_dat$data(withSelection = TRUE) %>%
@@ -267,7 +279,7 @@ output$summary <- DT::renderDataTable({
     tt = cbind(tt, selnum=.GlobalEnv$.pcmpSelNum[1])
     if (!(".pcmpTab" %in% ls(.GlobalEnv, all.names=TRUE))) assign(".pcmpTab", tt, .GlobalEnv)
       else assign(".pcmpTab", rbind(.GlobalEnv$.pcmpTab, tt), .GlobalEnv)
-    ans = DT::formatRound(DT::datatable(tt), 2:7, digits=3)
+    ans = DT::formatRound(DT::datatable(tt), 1:7, digits=3)
    removeNotification(id="limnote")
     ans
   })

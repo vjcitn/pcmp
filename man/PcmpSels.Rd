@@ -5,8 +5,16 @@
 \alias{PcmpSels}
 \alias{PcmpSels-class}
 \title{organize record of selections in pcmp}
+\usage{
+PcmpSels(obj)
+}
+\arguments{
+\item{obj}{a list with elements 'cells' and 'limmaTab'}
+}
 \description{
 organize record of selections in pcmp
+
+construct pcmp selections object
 }
 \section{Slots}{
 
