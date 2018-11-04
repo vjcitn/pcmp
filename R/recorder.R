@@ -59,22 +59,24 @@ replay = function(sce, sels, whichProj, dim1, dim2) {
  }
 
 
-#' produce biplots of top genes for selections
+#' produce biplot of top genes for a selection
 #' @param sce a SingleCellExperiment instance to which pcmpApp was applied
 #' @param sels an instance of PcmpSels
-#' @param which a numeric(4) collection telling which of the selections occupy a 2 x 2 biplot array
-#' @param ntopgenes numeric(1) number of (most differentially-expressed, selection vs all others) genes to use in PCA for selected samples
+#' @param which a numeric(1) telling which of the 
+#' selections is used to form a biplot.  The 
+#' order used is that of `geneSets(sels)`
+#' @param ntopgenes numeric(1) number of 
+#' (most differentially-expressed, selection vs all others) 
+#' genes to use in PCA for selected samples; the
+#' assay data are transformed as log(assay+1) before PCA is carried out
 #' @examples
 #' op = par(no.readonly=TRUE)
 #' par(mfrow=c(2,2))
-#' for (i in 1:4) biplots(pcmp::sce300xx, pcmp::acc4vis2, which=i)
+#' for (i in 1:4) biplotSel(pcmp::sce300xx, pcmp::acc4vis2, which=i)
 #' par(op)
 #' @export
-biplots = function (sce, sels, which = 1, ntopgenes=6) 
+biplotSel = function (sce, sels, which = 1, ntopgenes=6) 
 {
-#    opar = par(no.readonly = TRUE)
-#    on.exit(par(opar))
-#    par(mfrow = c(2, 2))
     cs = cellSets(sels)
     gt = geneTable(sels)
     gts = split(gt, gt[, "selnum"])

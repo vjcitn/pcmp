@@ -167,6 +167,9 @@ See the 'about' tab for more information.", pkgVersion())),
        column(6, d3scatterOutput("scatter4"))
        )
      ), # end panel
+#    tabPanel("topr3d",
+#       scatterplotThreeOutput("try3d")
+#     ),
     tabPanel("selTable",
      DT::dataTableOutput("summary")
      ),
@@ -252,6 +255,13 @@ server <- function(input, output, session) {
     d3scatter(shared_dat, fmlist[[input$meth2]][[methx]], 
             fmlist[[input$meth2]][[methy]], ~strat, width = "100%")
   })
+#  output$try3d <- renderScatterplotThree({
+#    colors = palette(rainbow(30))[ as.numeric(
+#                      factor(colData(sce)[[input$pickedStrat]])) ]
+#    print(head(shared_dat))
+#    scatterplot3js(PC1, PC2, PC3, crosstalk=shared_dat, brush=TRUE,
+#       color=colors)
+#    })
  output$accum = renderPlot({
  ans = list(cells = .GlobalEnv$.pcmpSelCells, limmaTab=.GlobalEnv$.pcmpTab)
  tmp = new("PcmpSels", cellSets=ans$cells, geneTable=ans$limmaTab)

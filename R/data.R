@@ -23,3 +23,10 @@
 #' inds1 = acc4vis2@cellSets[[1]]
 #' points(rd$TS[ inds1, 3], rd$TS[ inds1, 4], pch=19, col="red")
 "acc4vis2"
+
+#' collection of selections from sce300xx, corresponding to vignette displays
+#' @format PcmpSels instance
+#' @examples
+#' data(vigAccum)
+#' head(geneTable(vigAccum),3)
+"vigAccum"
