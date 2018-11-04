@@ -5,7 +5,7 @@ Description: Provide a shiny app to compare projections
 Version: 0.2.2
 Author: Vince Carey
 Suggests: knitr, testthat
-Depends: R (>= 3.5.1), methods, shiny, crosstalk, dplyr, d3scatter,
+Depends: R (>= 3.5.0), methods, shiny, crosstalk, dplyr, d3scatter,
 	SingleCellExperiment
 Imports: irlba, Rtsne, umap, S4Vectors, DT, limma,
 	graphics, stats, utils
