@@ -179,7 +179,8 @@ See the 'about' tab for more information.", pkgVersion())),
         ),
     tabPanel("about",
      helpText("pcmp is crosstalk-based interactive graphics for surveying different dimension reduction procedures for data in SingleCellExperiment containers.  The reducedDims component must be populated with several reductions, each including at least 4 dimensions.   Different methods are used in the left and right columns, and different projection components can are used in the top and bottom rows, as selected using the method/top/bot controls below.  The ColorBy button will recolor points according to discrete covariates in the colData of the input object."),
-     helpText("The initial example uses the Allen Brain Atlas RNA-seq data on anterior cingulate cortex (ACC) and primary visual cortex (VIS) brain regions.  Strata were formed using donor (3 levels) and region (2 levels) and 300 cells were sampled at random in each stratum.")
+     helpText("pcmpApp can be demonstrated with the object pcmp::sce300xx, an extract from the Allen Brain Atlas RNA-seq data on anterior cingulate cortex (ACC) and primary visual cortex (VIS) brain regions.  Strata were formed using donor (3 levels) and region (2 levels) and 300 cells were sampled at random in each stratum.  The murLung3k app at shinyapps.io uses an extract from the Tabula Muris project data focused on a collection of cells from the mouse lung; the data
+are available in the github repo vjcitn/pcmpshin in data/mouse3k.rda.")
    )
   )
   )
