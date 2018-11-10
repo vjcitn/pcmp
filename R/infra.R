@@ -254,7 +254,7 @@ See the 'about' tab for more information.", pkgVersion())))
           helpText("up to four biplots displayed here; use biplotSel on PcmpSel objects to work with additional selections")
           )),
         fluidRow(column(12,
-          plotOutput("accum2")
+          plotOutput("accum2", height="800px")
           ))
         ),
     tabPanel("about",
@@ -389,7 +389,6 @@ SERVER <- function(input, output, session) {
 #  output$try3d <- renderScatterplotThree({
 #    colors = palette(rainbow(30))[ as.numeric(
 #                      factor(colData(sce)[[input$pickedStrat]])) ]
-#    print(head(shared_dat))
 #    scatterplot3js(PC1, PC2, PC3, crosstalk=shared_dat, brush=TRUE,
 #       color=colors)
 #    })
@@ -398,22 +397,24 @@ SERVER <- function(input, output, session) {
 # collect the information on selections so far
 #
  output$accum = renderPlot({
- invalidateLater(1000)
+ invalidateLater(2500)
  ans = list(cells = .GlobalEnv$.pcmpSelCells, limmaTab=.GlobalEnv$.pcmpTab)
  tmp = new("PcmpSels", cellSets=ans$cells, geneTable=ans$limmaTab)
  replay(sce, tmp, input$meth1, input$botx, input$boty) 
  })
 
  output$accum2 = renderPlot({
- invalidateLater(1000)
+ invalidateLater(2500)
  ans = list(cells = .GlobalEnv$.pcmpSelCells, limmaTab=.GlobalEnv$.pcmpTab)
  npl = min(c(length(ans[["cells"]]), 4))
  tmp = new("PcmpSels", cellSets=ans$cells, geneTable=ans$limmaTab)
  #replay(sce, tmp, input$meth1, input$botx, input$boty) 
- opar = par(no.readonly=TRUE)
- par(mfrow=c(2,2), mar=c(3,3,1,1))
+ #opar = par(no.readonly=TRUE)
+ #par(mfrow=c(2,2), mar=c(3,3,1,1))
+ mym = matrix(1:4,byrow=T,nc=2)
+ layout(mym, widths=c(2,2))
  for (i in 1:npl) biplotSel(sce, tmp, which=i, main=paste("selection", i))
- par(opar)
+ #par(opar)
  })
     
 #
