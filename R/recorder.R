@@ -47,7 +47,24 @@ setMethod("geneTable", "PcmpSels", function(x) x@geneTable)
 #' @examples
 #' replay(pcmp::sce300xx, pcmp::acc4vis2, "TS", 3, 4)
 #' @export
-replay = function(sce, sels, whichProj, dim1, dim2) {
+replay = function (sce, sels, whichProj, dim1=1, dim2=2)
+{
+    stopifnot(is(sce, "SummarizedExperiment"), is(sels, "PcmpSels"))
+    stopifnot(whichProj %in% names(reducedDims(sce)))
+    rddat = reducedDims(sce)[[whichProj]]
+    nsels = length(cs <- cellSets(sels))
+    plot(rddat[, dim1], rddat[, dim2], col = "gray", xlab = paste0(whichProj, 
+        "(", dim1, ")"), ylab = paste0(whichProj, "(", dim2, 
+        ")"))
+    for (i in 1:nsels) points(rddat[cs[[i]], dim1], rddat[cs[[i]], 
+        dim2], col = i + 1)
+    legx = min(rddat[,dim1], na.rm=TRUE)
+    legy = max(rddat[,dim2], na.rm=TRUE)
+    legend(1.05*legx, .95*legy, legend=paste0("sel", 1:nsels),
+      col=2:(nsels+1), pch=19)
+}
+
+replayOld = function(sce, sels, whichProj, dim1, dim2) {
  stopifnot(is(sce, "SummarizedExperiment"), is(sels, "PcmpSels"))
  stopifnot(whichProj %in% names(reducedDims(sce)))
  rddat = reducedDims(sce)[[whichProj]]

@@ -2,13 +2,13 @@ Package: pcmp
 Title: projection comparison app
 Description: Provide a shiny app to compare projections 
 	in a SingleCellExperiment container.
-Version: 0.2.6
+Version: 0.2.9
 Author: Vince Carey
 Suggests: knitr, testthat
 Depends: R (>= 3.5.0), methods, shiny, crosstalk, dplyr, d3scatter,
 	SingleCellExperiment
 Imports: irlba, Rtsne, umap, S4Vectors, DT, limma,
-	graphics, stats, utils
+	graphics, stats, utils, SummarizedExperiment
 Maintainer: VJ Carey <stvjc@channing.harvard.edu>
 License: Artistic-2.0
 LazyLoad: yes

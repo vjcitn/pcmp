@@ -4,7 +4,7 @@
 \alias{replay}
 \title{replay a selection by plotting the selected cells}
 \usage{
-replay(sce, sels, whichProj, dim1, dim2)
+replay(sce, sels, whichProj, dim1 = 1, dim2 = 2)
 }
 \arguments{
 \item{sce}{a SingleCellExperiment instance to which pcmpApp was applied}

@@ -1,5 +1,3 @@
-pkgVersion = function() tail(strsplit(grep("Version", help(package = pcmp)$info[[1]], 
-    value = TRUE), " ")[[1]], 1)
 
 #' find discrete variables in colData
 #' @import SingleCellExperiment crosstalk d3scatter dplyr shiny
@@ -128,6 +126,18 @@ addProjections = function(sce, ncomp=4, tx=function(x) log(x+1),
 #' Note that tabulation of DE genes can be very slow if
 #' the input SingleCellExperiment has more than 10k rows.
 #' @return will return an instance of PcmpSels
+#' @examples
+#' if (interactive()) {
+#'  message("be sure to use example(pcmpApp, ask=FALSE)")
+#'  lit = pcmp::sce300xx
+#'  sds = rowSds(assay(lit))
+#'  top1k = order(sds,decreasing=TRUE)[1:1000]
+#'  lit = lit[top1k,]
+#'  chk = pcmpApp(lit) # fires up browser, if ask != FALSE you must
+#'  # assent to each update 
+#'  try(chk)  # may error if no selections
+#'  try(head(geneTable(chk),3))  # likewise
+#' }
 #' @export
 pcmpApp = function(sce) {
  if (nrow(sce)>5000) message("note that performance is greatly enhanced by filtering the feature set down to 5k or so.")
