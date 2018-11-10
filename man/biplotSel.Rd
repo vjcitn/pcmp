@@ -4,7 +4,7 @@
 \alias{biplotSel}
 \title{produce biplot of top genes for a selection}
 \usage{
-biplotSel(sce, sels, which = 1, ntopgenes = 6)
+biplotSel(sce, sels, which = 1, ntopgenes = 6, cex = c(2, 1), ...)
 }
 \arguments{
 \item{sce}{a SingleCellExperiment instance to which pcmpApp was applied}
@@ -19,6 +19,10 @@ order used is that of `geneSets(sels)`}
 (most differentially-expressed, selection vs all others) 
 genes to use in PCA for selected samples; the
 assay data are transformed as log(assay+1) before PCA is carried out}
+
+\item{cex}{passed to biplot.prcomp}
+
+\item{\dots}{passed to biplot.prcomp}
 }
 \description{
 produce biplot of top genes for a selection

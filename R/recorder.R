@@ -86,18 +86,20 @@ replayOld = function(sce, sels, whichProj, dim1, dim2) {
 #' (most differentially-expressed, selection vs all others) 
 #' genes to use in PCA for selected samples; the
 #' assay data are transformed as log(assay+1) before PCA is carried out
+#' @param cex passed to biplot.prcomp
+#' @param \dots passed to biplot.prcomp
 #' @examples
 #' op = par(no.readonly=TRUE)
 #' par(mfrow=c(2,2))
 #' for (i in 1:4) biplotSel(pcmp::sce300xx, pcmp::acc4vis2, which=i)
 #' par(op)
 #' @export
-biplotSel = function (sce, sels, which = 1, ntopgenes=6) 
+biplotSel = function (sce, sels, which = 1, ntopgenes=6, cex=c(2,1), ...) 
 {
     cs = cellSets(sels)
     gt = geneTable(sels)
     gts = split(gt, gt[, "selnum"])
-    gns = lapply(gts, rownames)
+    gns = lapply(gts, function(x) x$featid)
     curpc = prcomp(t(log(assay(sce[gns[[which]][1:ntopgenes], cs[[which]]])+1)))
-    biplot(curpc, xlabs=rep(".", length(cs[[which]])), expand=.8)
+    biplot(curpc, xlabs=rep(".", length(cs[[which]])), expand=.8, cex=cex, ...)
 }
