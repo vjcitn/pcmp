@@ -5,18 +5,18 @@
 \title{add a series of projectors to transformed assay data
 in a SingleCellExperiment}
 \usage{
-addProjections(sce, ncomp = 4, tx = function(x) log(x + 1), projectors,
-  ...)
+addProjections(sce, tx = function(x) log(x + 1), projectors,
+  assayind = 1, ...)
 }
 \arguments{
 \item{sce}{SingleCellExperiment instance}
-
-\item{ncomp}{numeric(1) number of components per projection}
 
 \item{tx}{function that will transform assay quantifications,
 defaults to `function(x) log(x+1)`}
 
 \item{projectors}{a list of list of functions like that created}
+
+\item{assayind}{numeric(1) second argument ('i') to assay(), defaults to 1}
 
 \item{\dots}{not used
 by `defaultProjectors()`}
@@ -24,4 +24,15 @@ by `defaultProjectors()`}
 \description{
 add a series of projectors to transformed assay data
 in a SingleCellExperiment
+}
+\examples{
+if (interactive()) {
+sce = sce300xx
+reducedDims(sce) = NULL
+ov = options()$verbose
+options(verbose=TRUE)
+sce = addProjections(sce, proj=defaultProjectors())
+sce
+options(verbose=ov) # restore
+}
 }

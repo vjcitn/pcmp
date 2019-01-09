@@ -26,6 +26,11 @@ schematize a sequence of projection methods
 \note{
 The default sequence is irlba::irlba, umap::umap,
 Rtsne::Rtsne; see the note on `warmdim` parameter.
+Prior to pcmp version 0.3.0, TSNE and UMAP projections were
+computed 'in one shot' with high target numbers of dimensions.
+Beginning in 0.3.0, TSNE and UMAP projections are computed
+targeting 2 and 3 dimensions separately for TSNE, and 2-4
+dimensions for UMAP.
 }
 \examples{
 defaultProjectors

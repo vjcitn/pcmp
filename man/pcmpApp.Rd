@@ -9,6 +9,8 @@ pcmpApp(sce)
 \arguments{
 \item{sce}{SingleCellExperiment instance with reducedDims populated
 with various candidates for projection from assay data --}
+
+\item{assayind}{numeric(1) 'i' argument to assay(sce, i), defaults to 1, for extracting expression values}
 }
 \value{
 will return an instance of PcmpSels

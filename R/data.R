@@ -30,3 +30,10 @@
 #' data(vigAccum)
 #' head(geneTable(vigAccum),3)
 "vigAccum"
+
+#' annotation of immgen mouse immune cell resource
+#' @format data.frame
+#' @source \url{https://gist.github.com/nachocab/3d9f374e0ade031c475a}
+#' @examples
+#' head(immgenAnno)
+"immgenAnno"
