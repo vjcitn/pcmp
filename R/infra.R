@@ -526,7 +526,11 @@ newApp = function(sce, cellIdTag = ".cellid",
 discv = discreteColdVars(sce) # find discrete vbls suitable for coloring
 colData(sce)[[cellIdTag]] = colnames(sce) # add cell identifier in colData
 myenv = new.env()  # can this be dropped?
-
+#
+# we will record a planar map of selections in a PNG file
+# that will be bound to the output
+#
+ pngtarget = tempfile()
 ##
 ## define app UI
 ##
@@ -826,6 +830,25 @@ output$summary <- DT::renderDataTable({
    removeNotification(id="limnote")
    ans
   })
+
+   accumDF = reactive({
+     validate(need(input$leftRD, "select top left x"))
+     rd = reducedDims(sce)
+     ndf = data.frame(x = rd[[input$leftRD]][, input$TopX], 
+              y=rd[[input$leftRD]][, input$TopY])
+     ndf$grp = "unsel"
+     cd = colData(sce)
+     reneed = paste0("^", selectionPrefix)
+     selinds = grep(reneed, names(cd))
+     if (length(selinds)>0) {
+         cur = 0
+         for (i in selinds) {
+           cur = cur+1
+           ndf$grp[which(cd[,i]==1)] = paste0(selectionPrefix, cur)
+           }
+         }
+     ndf
+   })
    output$accum = renderPlot( {
      validate(need(input$leftRD, "select top left x"))
      rd = reducedDims(sce)
@@ -842,19 +865,34 @@ output$summary <- DT::renderDataTable({
            ndf$grp[which(cd[,i]==1)] = paste0(selectionPrefix, cur)
            }
          }
+     #selmap = ggplot(ndf, aes(x=x, y=y, colour=grp)) + geom_point() +
+     #     guides(colour = guide_legend(override.aes = list(size=12),
+     #        label.theme = element_text( size = 15),
+     #        title.theme = element_text( size = 15)))
+     #grDevices::png(filename=pngtarget) # serialize map whenever produced
+     #print(selmap)
+     #dev.off()  # close file
      ggplot(ndf, aes(x=x, y=y, colour=grp)) + geom_point() +
           guides(colour = guide_legend(override.aes = list(size=12),
              label.theme = element_text( size = 15),
              title.theme = element_text( size = 15)))
-             }
-           )  
+     })
 #
 # prepare stop button
 #
-
    observe({
             if(input$btnSend > 0)
                isolate({
+                 ndf = accumDF()
+                 grDevices::png(filename=pngtarget)
+                 print(ggplot(ndf, aes(x=x, y=y, colour=grp)) + geom_point() +
+                   guides(colour = guide_legend(override.aes = list(size=12),
+                     label.theme = element_text( size = 15),
+                     title.theme = element_text( size = 15))))
+                 dev.off()
+                 metadata(sce)$pngname <<- pngtarget
+                 Sys.sleep(.5)
+                 metadata(sce)$pngimg <<- try(png::readPNG(pngtarget))
                  stopApp(returnValue=0)
                         })  
            })  
@@ -863,5 +901,11 @@ output$summary <- DT::renderDataTable({
  } #end server
 
 runApp(list(ui=newUI, server=newserver))
-list(myenv, sce)
+#
+# retrieve final selection map
+#
+#     img = png::readPNG(pngtarget)
+#     metadata(sce)$selectionMapPNG <<- img
+#list(myenv, sce)
+sce
 }
