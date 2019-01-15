@@ -288,6 +288,7 @@ See the 'about' tab for more information.", pkgVersion())))
      ),
     tabPanel("accum",
        helpText("Method and dimensions taken from bottom left panel"),
+       actionButton("btnUpd", "Update map"),
         fluidRow(column(12,
           plotOutput("accum")
           )),
@@ -517,15 +518,18 @@ rdprops = function(sce) {
  list(names=rdnames, ncols=rdncols)
 }
 
-newApp = function(sce, cellIdTag = ".cellid", selectionPrefix="sel_",
-   myenv = new.env()) {
-
+newApp = function(sce, cellIdTag = ".cellid", 
+     selectionPrefix="sel_", numDiscGenes=20) {
 ##
 ## general annotation tasks
 ##
 discv = discreteColdVars(sce) # find discrete vbls suitable for coloring
 colData(sce)[[cellIdTag]] = colnames(sce) # add cell identifier in colData
+myenv = new.env()  # can this be dropped?
 
+##
+## define app UI
+##
 newUI = fluidPage(
  sidebarPanel(width=3,
    fluidRow(
@@ -548,15 +552,15 @@ See the 'about' tab for more information.", pkgVersion())))
       column(12,
        helpText(h4("downloads:")))
      ),
-    fluidRow(
-      column(6,
-       downloadButton("downloadData", "DE genes")),
-      column(6,
-       downloadButton("downloadData2", "cellSets"))
-     ),
+#    fluidRow(
+#      column(6,
+#       downloadButton("downloadData", "DE genes")),
+#      column(6,
+#       downloadButton("downloadData2", "cellSets"))
+#     ),
     fluidRow(
       column(12,
-       helpText(h4("to conclude:")))
+       helpText(h4("return updated SCE:")))
      ),
     fluidRow(
       column(12,
@@ -565,7 +569,7 @@ See the 'about' tab for more information.", pkgVersion())))
   ), # end sidebarPanel
    mainPanel(
     tabsetPanel(
-    tabPanel("scatter",
+    tabPanel("scatter", id="tabs",
      helpText("Drag over points to make a selection, then use the selTable tab to generate DE signature; selections accumulate as this process is repeated."),
      fluidRow(
        column(6, d3scatterOutput("scatter1")),
@@ -576,11 +580,12 @@ See the 'about' tab for more information.", pkgVersion())))
        column(6, d3scatterOutput("scatter4"))
        )
      ), # end panel
-    tabPanel("selTable",
-     DT::dataTableOutput("summary")
+    tabPanel("selTable", 
+     DT::dataTableOutput("summary"), id="seller"
      ),
-    tabPanel("accum",
-       helpText("Method and dimensions taken from bottom left panel"),
+    tabPanel("accum", id="accer",
+       helpText("Method and dimensions taken from bottom left panel;"),
+       helpText("Toggle the projection method to update the plot"),
         fluidRow(column(12,
           plotOutput("accum")
           )),
@@ -591,7 +596,7 @@ See the 'about' tab for more information.", pkgVersion())))
           plotOutput("accum2", height="800px")
           ))
         ),
-    tabPanel("about",
+    tabPanel("about", id="about",
      helpText(h3("pcmp demonstrates crosstalk-based interactive graphics for surveying different dimension reduction procedures for data in SingleCellExperiment containers.  The reducedDims component must be populated with several reductions, each including at least 4 dimensions.   Different methods are used in the left and right columns, and different projection components can are used in the top and bottom rows, as selected using the method/top/bot controls.  The 'stratby' button will recolor points according to discrete covariates in the colData of the input object.")),
      helpText(h3("current input data structure:")),
      verbatimTextOutput("scedump"),
@@ -601,12 +606,6 @@ See the 'about' tab for more information.", pkgVersion())))
    )
   )
   )
-#  ) 
-# mainPanel(
-#  helpText("demo2"),
-#  textOutput("picks"),
-#  plotOutput("demo3")
-#  )  # end mainPanel
  ) # end fluidPage
 
 newserver = function(input, output, session) {
@@ -802,36 +801,53 @@ newserver = function(input, output, session) {
 # collect selection and run limma
 #
 output$summary <- DT::renderDataTable({
-   sce <<- getSels()
-   print(names(colData(sce)))
-   print(table(sce$sel_1))
-#    df <- shared_dat$data(withSelection = TRUE) %>%
-#      filter(selected_ | is.na(selected_)) %>%
-#      mutate(selected_ = NULL)
-#    sel=rep(0, ncol(sce))
-#    names(sel) = colnames(sce)
-#    sel[df$.cellid] = 1
-    sel = colData(sce)[,ncol(colData(sce))] # use rightmost col for current selection
-    mm = stats::model.matrix(~sel, data=data.frame(sel=sel))
+   sce <<- getSels()  # must update local SCE
+   sel = colData(sce)[,ncol(colData(sce))] # use rightmost col for current selection
+   mm = stats::model.matrix(~sel, data=data.frame(sel=sel))
    showNotification(paste("starting table processing", date()), id="limnote")
-    X = log(assay(sce)+1)
-    f1 = lmFit(X, mm)
-    ef1 = eBayes(f1)
-    options(digits=3)
-
-    tt = topTable(ef1, 2, n=20)
-    tt$featid = rownames(tt)
-#    if (!(".pcmpSelNum" %in% ls(myenv, all.names=TRUE))) assign(".pcmpSelNum", 1, myenv)
-#      else assign(".pcmpSelNum", myenv$.pcmpSelNum + 1, envir=myenv)
-#    if (!(".pcmpSelCells" %in% ls(myenv, all.names=TRUE))) assign(".pcmpSelCells", list(df$.cellid), envir=myenv)
-#      else assign(".pcmpSelCells", c(myenv$.pcmpSelCells, list(df$.cellid)), envir=myenv)
-#    tt = cbind(tt, selnum=myenv$.pcmpSelNum[1])
-#    if (!(".pcmpTab" %in% ls(myenv, all.names=TRUE))) assign(".pcmpTab", tt, envir=myenv)
-#      else assign(".pcmpTab", rbind(myenv$.pcmpTab, tt, make.row.names=FALSE), envir=myenv)
-    ans = DT::formatRound(DT::datatable(tt), 1:7, digits=3)
+   X = log(assay(sce)+1)
+   f1 = lmFit(X, mm)
+   ef1 = eBayes(f1)
+   options(digits=3)
+   tt = topTable(ef1, 2, n=numDiscGenes)
+   tt$featid = rownames(tt)
+   ans = DT::formatRound(DT::datatable(tt), 1:7, digits=3)
+   ntabs = length(metadata(sce)$limmaTabs) 
+   if (ntabs == 0) {
+      tt$selnum = 1
+      metadata(sce)$limmaTabs <<- tt
+      }
+   else {
+      lt = metadata(sce)$limmaTabs
+      last = tail(lt$selnum,1)
+      tt$selnum = last+1
+      metadata(sce)$limmaTabs <<- rbind(metadata(sce)$limmaTabs, tt)
+      }
    removeNotification(id="limnote")
-    ans
+   ans
   })
+   output$accum = renderPlot( {
+     validate(need(input$leftRD, "select top left x"))
+     rd = reducedDims(sce)
+     ndf = data.frame(x = rd[[input$leftRD]][, input$TopX], 
+              y=rd[[input$leftRD]][, input$TopY])
+     ndf$grp = "unsel"
+     cd = colData(sce)
+     reneed = paste0("^", selectionPrefix)
+     selinds = grep(reneed, names(cd))
+     if (length(selinds)>0) {
+         cur = 0
+         for (i in selinds) {
+           cur = cur+1
+           ndf$grp[which(cd[,i]==1)] = paste0(selectionPrefix, cur)
+           }
+         }
+     ggplot(ndf, aes(x=x, y=y, colour=grp)) + geom_point() +
+          guides(colour = guide_legend(override.aes = list(size=12),
+             label.theme = element_text( size = 15),
+             title.theme = element_text( size = 15)))
+             }
+           )  
 #
 # prepare stop button
 #
