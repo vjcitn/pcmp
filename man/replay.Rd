@@ -21,5 +21,5 @@ replay(sce, sels, whichProj, dim1 = 1, dim2 = 2)
 replay a selection by plotting the selected cells
 }
 \examples{
-replay(pcmp::sce300xx, pcmp::acc4vis2, "TS", 3, 4)
+replay(pcmp::sce300xx, pcmp::acc4vis2, "TSNE2", 1, 2)
 }

@@ -19,9 +19,9 @@
 #' data(acc4vis2)
 #' data(sce300xx)
 #' rd = reducedDims(sce300xx)
-#' plot(rd$TS[,3], rd$TS[,4])
+#' plot(rd$TSNE2[,1], rd$TSNE2[,2])
 #' inds1 = acc4vis2@cellSets[[1]]
-#' points(rd$TS[ inds1, 3], rd$TS[ inds1, 4], pch=19, col="red")
+#' points(rd$TSNE2[ inds1, 1], rd$TSNE2[ inds1, 2], pch=19, col="red")
 "acc4vis2"
 
 #' collection of selections from sce300xx, corresponding to vignette displays

@@ -45,7 +45,7 @@ setMethod("geneTable", "PcmpSels", function(x) x@geneTable)
 #' @param dim1 numeric(1) x axis of replay
 #' @param dim2 numeric(1) y axis of replay
 #' @examples
-#' replay(pcmp::sce300xx, pcmp::acc4vis2, "TS", 3, 4)
+#' replay(pcmp::sce300xx, pcmp::acc4vis2, "TSNE2", 1, 2)
 #' @export
 replay = function (sce, sels, whichProj, dim1=1, dim2=2)
 {

@@ -26,7 +26,8 @@ test_that("vigAccum has expected content", {
 test_that("state of defaultProjectors is known", {
   expect_true(all.equal(names(defaultProjectors()), c("projectors", 
      "retrievers")))
-  expect_true(all.equal(names(defaultProjectors()[[1]]), c("PPCA", "UMAP", "TSNE")))
+  expect_true(all.equal(names(defaultProjectors()[[1]]), c("PPCA", "UMAP2", 
+     "UMAP3", "UMAP4", "TSNE2", "TSNE3")))
 })
 
 someRowSums = c(`3.8-1.2` = 1, `3.8-1.3` = 6, `3.8-1.4` = 0, `3.8-1.5` = 3, 

@@ -1,9 +1,10 @@
 pkgVersion = function() as.character(read.dcf(system.file("DESCRIPTION", package="pcmp"))[,"Version"])
 
 #' find discrete variables in colData
-#' @import SingleCellExperiment crosstalk d3scatter dplyr shiny
+#' @import SingleCellExperiment crosstalk d3scatter dplyr shiny ggplot2
 #' @import Rtsne irlba umap methods
 #' @importFrom S4Vectors SimpleList
+#' @importFrom SummarizedExperiment colData<-
 #' @param se instance of SummarizedExperiment; SingleCellExperiment also works
 #' @param maxnuv numeric(1) largest number of unique values that may be present in a variable that will be regarded as 'discrete'
 #' @return character vector of variable names satisfying discreteness condition
@@ -494,6 +495,9 @@ rdprops = function(sce) {
 #' Define a shiny app for comparing projections
 #' @importFrom limma lmFit eBayes topTable
 #' @importFrom stats model.matrix
+#' @importFrom grDevices dev.off
+#' @importFrom graphics layout legend par
+#' @importFrom utils tail write.csv
 #' @param sce SingleCellExperiment instance with reducedDims populated
 #' with various candidates for projection from assay data --
 #' @param assayind numeric(1) 'i' argument to assay(sce, i), defaults to 1, for extracting expression values
@@ -689,6 +693,7 @@ newserver = function(input, output, session) {
      )
     allNcols = props$ncols
     activeNcols = allNcols[c(input$rightRD, input$leftRD)]
+    print(activeNcols)
     minx = min(activeNcols)
    fluidRow(
     column(6,
