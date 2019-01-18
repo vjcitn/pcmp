@@ -146,7 +146,7 @@ addProjections = function(sce, tx=function(x) log(x+1),
   #  )
   pn = names(prs)
   ans = lapply(pn, function(x) projectors$retrievers[[x]](prs[[x]]))
-  names(ans) = names(projectors$retrievers)
+  names(ans) = pn # names(projectors$retrievers)
   ini = reducedDims(sce)
   if (length(ini) == 0) reducedDims(sce) = SimpleList(ans)
   else reducedDims(sce) = c(ini, SimpleList(ans))
@@ -537,11 +537,8 @@ pcmpApp = function(sce, assayind=1, cellIdTag = ".cellid",
 discv = discreteColdVars(sce) # find discrete vbls suitable for coloring
 colData(sce)[[cellIdTag]] = colnames(sce) # add cell identifier in colData
 myenv = new.env()  # can this be dropped?
-#
-# we will record a planar map of selections in a PNG file
-# that will be bound to the output
-#
- pngtarget = tempfile()
+cl = match.call()
+metadata(sce)$params = allParamBindings(cl)
 ##
 ## define app UI
 ##
@@ -695,6 +692,7 @@ newserver = function(input, output, session) {
     activeNcols = allNcols[c(input$rightRD, input$leftRD)]
     print(activeNcols)
     minx = min(activeNcols)
+    print(minx)
    fluidRow(
     column(6,
      numericInput("TopX", "topX", value=1, min=1, max=minx-1)),
@@ -709,6 +707,7 @@ newserver = function(input, output, session) {
     allNcols = props$ncols
     activeNcols = allNcols[c(input$rightRD, input$leftRD)]
     minx = min(activeNcols)
+    print(minx)
    fluidRow(
     column(6,
      numericInput("BotX", "botX", value=1, min=1, max=minx-1)),
@@ -892,16 +891,6 @@ output$summary <- DT::renderDataTable({
    observe({
             if(input$btnSend > 0)
                isolate({
-                 ndf = accumDF()
-                 grDevices::png(filename=pngtarget)
-                 print(ggplot(ndf, aes(x=x, y=y, colour=grp)) + geom_point() +
-                   guides(colour = guide_legend(override.aes = list(size=12),
-                     label.theme = element_text( size = 15),
-                     title.theme = element_text( size = 15))))
-                 dev.off()
-                 metadata(sce)$pngname <<- pngtarget
-                 Sys.sleep(.5)
-                 metadata(sce)$pngimg <<- try(png::readPNG(pngtarget))
                  stopApp(returnValue=0)
                         })  
            })  
@@ -912,3 +901,54 @@ output$summary <- DT::renderDataTable({
 runApp(list(ui=newUI, server=newserver))
 sce
 }
+
+
+allParamBindings = function(cl) {
+ # cl is a call
+ stopifnot(inherits(cl, "call"))
+ fname = as.character(as.list(cl)[[1]])
+ defaults = as.list(get(fname))
+ defaults = defaults[-length(defaults)]
+ bound = as.list(cl)[-1]
+ tmp = list(defaults=defaults, bound=bound)
+ usedef = setdiff(names(tmp$defaults), names(tmp$bound))
+ kp = names(tmp$bound)
+ c(tmp$bound[kp], tmp$defaults[usedef])
+}
+
+#' plot selection map from output of pcmpApp
+#' @param esce an extended SingleCellExperiment, with metadata extended using pcmpApp
+#' @param proj character(1) name of a reducedDims component of esce
+#' @param dim1 numeric(1) dimension to use as x axis
+#' @param dim2 numeric(1) dimension to use as y axis
+#' @export
+plotSelMap = function(esce, proj, dim1=1, dim2=2, alpha=.5) {
+ stopifnot("params" %in% names(metadata(esce)))
+ stopifnot(proj %in% names(reducedDims(esce)))
+ selPref = metadata(esce)$params$selectionPrefix
+ selinds = grep(selPref, names(colData(esce)),value=TRUE)
+ seldat = colData(esce)[,selinds]
+ grp = data.matrix(seldat) %*% (1:ncol(seldat))
+ if (any(grp==0)) grp[which(grp==0)] = ncol(seldat)+1
+ rd = reducedDims(esce)[[proj]]
+ pldf = data.frame(x=rd[,dim1], y=rd[,dim2], grp=c(names(seldat), "unsel")[grp])
+ names(pldf)[1:2] = paste0(proj, "_", c(dim1, dim2))
+ ggplot(pldf, aes_string(x=names(pldf)[1], y=names(pldf[2]),
+     colour="grp")) + geom_point(alpha=alpha)
+}
+
+getGroup = function (esce, gvname= "group" ) {
+    stopifnot("params" %in% names(metadata(esce)))
+    selPref = metadata(esce)$params$selectionPrefix
+    selinds = grep(selPref, names(colData(esce)), value = TRUE)
+    seldat = colData(esce)[, selinds]
+    grp = data.matrix(seldat) %*% (1:ncol(seldat))
+    if (any(grp == 0)) 
+        grp[which(grp == 0)] = ncol(seldat) + 1
+    grp
+}
+
+#SharedData$new(d, ~key) %>%
+#  plot_ly(x = ~x, y = ~y) %>%
+#  highlight("plotly_selected") %>%
+#  layout(dragmode = "lasso")
