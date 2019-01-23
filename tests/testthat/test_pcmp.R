@@ -10,17 +10,12 @@ library(pcmp)
 context("verify nonregression of serialized data, and test geneTable and cellSets functions")
 
 test_that("acc4vis2 has expected content", {
-  expect_true(is(acc4vis2, "PcmpSels"))
-  expect_true(nrow(geneTable(acc4vis2))==120)
-  expect_true(ncol(geneTable(acc4vis2))==8)
-  expect_true(all.equal(head(cellSets(acc4vis2)[[1]]),
-    c("SM-DAIFX_S79_E1-50", "SM-DAIFZ_S85_E1-50", "SM-DAIG2_S67_E1-50", 
-      "SM-DAIG2_S93_E1-50", "SM-DAIG3_S78_E1-50", "SM-DAIGB_S93_E1-50")))
+  expect_true(is(acc4vis2, "SingleCellExperiment"))
+  expect_true("limmaTabs" %in% names(metadata(acc4vis2)))
 })
 
 test_that("vigAccum has expected content", {
-  expect_true(is(vigAccum, "PcmpSels"))
-  expect_true(length(cellSets(vigAccum))==6)
+  expect_true(is(vigAccum, "SingleCellExperiment"))
 })
 
 test_that("state of defaultProjectors is known", {

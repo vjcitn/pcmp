@@ -4,7 +4,7 @@
 \name{vigAccum}
 \alias{vigAccum}
 \title{collection of selections from sce300xx, corresponding to vignette displays}
-\format{PcmpSels instance}
+\format{SingleCellExperiment instance, produced by pcmpApp}
 \usage{
 vigAccum
 }
@@ -13,6 +13,6 @@ collection of selections from sce300xx, corresponding to vignette displays
 }
 \examples{
 data(vigAccum)
-head(geneTable(vigAccum),3)
+head(metadata(vigAccum)$limmaTabs,3)
 }
 \keyword{datasets}

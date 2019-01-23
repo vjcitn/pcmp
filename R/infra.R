@@ -153,338 +153,6 @@ addProjections = function(sce, tx=function(x) log(x+1),
   sce
 }
 
-oldpcmpApp = function(sce) {
- if (nrow(sce)>5000) message("note that performance is greatly enhanced by filtering the feature set down to 5k or so.")
- stores = c(".pcmpTab", ".pcmpSelNum", ".pcmpSelCells")
- sapply(stores, function(x) if(x %in% ls(.GlobalEnv, all.names=TRUE))
-    rm(list=x, envir=.GlobalEnv))
-
-  sce$.cellid = colnames(sce)
-  rd = reducedDims(sce)
-  nrd = names(rd)
-  ncomps = vapply(rd, ncol, numeric(1))
-  names(ncomps) = nrd # projection-specific numbers of components
-  ncomp = 3 # MUST FIX!
-#  stopifnot(all(ncomps == ncomps[1]))
-#  ncomp <- ncomps[1]
-  discv = discreteColdVars(sce)
-
-# uiMaker = function(sce) {
-#
-#  rd = reducedDims(sce)
-#  nrd = names(rd)
-#  ncomps = vapply(rd, ncol, numeric(1))
-#  stopifnot(all(ncomps == ncomps[1]))
-#  ncomp <- ncomps[1]
-#  discv = discreteColdVars(sce)
-#
-pkgVersion = function() as.character(read.dcf(system.file("DESCRIPTION", package="pcmp"))[,"Version"])
-UI =   fluidPage(
-   sidebarPanel(width=3,
-    fluidRow(
-     column(12,
-       helpText(h3(sprintf("pcmp %s: crosstalk-based interactive graphics \
-for dimension reduction in single-cell transcriptomics. \ 
-See the 'about' tab for more information.", pkgVersion())))
-       )
-      ),
-    fluidRow( 
-     column(12,
-       selectInput("pickedStrat", "stratby", discv, discv[1])
-      )
-     ),
-    fluidRow( 
-     column(12,
-       helpText(h4("projection methods:"))
-      )
-     ),
-    fluidRow(
-      column(6,
-       selectInput("meth1", "left", nrd, nrd[1])),
-      column(6,
-       selectInput("meth2", "right", nrd, nrd[2]))
-     ),
-    fluidRow( 
-     column(12,
-       helpText(h4("dimensions to use:"))
-      )
-     ),
-#
-# the following needs to be conditioned on selected projections
-# but for now we are assuming we need no more than 3
-#
-    fluidRow(
-      column(6,
-       numericInput("topx", "top x", 1, min=1, max=ncomp-1, step=1)),
-      column(6,
-       numericInput("topy", "top y", 2, min=2, max=ncomp, step=1))
-     ),
-    fluidRow(
-      column(6,
-       numericInput("botx", "bot x", 2, min=1, max=ncomp-1, step=1)),
-      column(6,
-       numericInput("boty", "bot y", 3, min=2, max=ncomp, step=1))
-     ),
-    fluidRow(
-      column(12,
-       helpText(h4("downloads:")))
-     ),
-    fluidRow(
-      column(6,
-       downloadButton("downloadData", "DE genes")),
-      column(6,
-       downloadButton("downloadData2", "cellSets"))
-     ),
-    fluidRow(
-      column(12,
-       helpText(h4("to conclude:")))
-     ),
-    fluidRow(
-      column(12,
-       actionButton("btnSend", "Stop app"))
-     )
-     ),
-   mainPanel(
-    tabsetPanel(
-    tabPanel("scatter",
-     helpText("Drag over points to make a selection, then use the selTable tab to generate DE signature; selections accumulate as this process is repeated."),
-     fluidRow(
-       column(6, d3scatterOutput("scatter1")),
-       column(6, d3scatterOutput("scatter2"))
-       ),
-      fluidRow(
-       column(6, d3scatterOutput("scatter3")),
-       column(6, d3scatterOutput("scatter4"))
-       )
-     ), # end panel
-    tabPanel("selTable",
-     DT::dataTableOutput("summary")
-     ),
-    tabPanel("accum",
-       helpText("Method and dimensions taken from bottom left panel"),
-       actionButton("btnUpd", "Update map"),
-        fluidRow(column(12,
-          plotOutput("accum")
-          )),
-        fluidRow(column(12,
-          helpText("up to four biplots displayed here; use biplotSel on PcmpSel objects to work with additional selections")
-          )),
-        fluidRow(column(12,
-          plotOutput("accum2", height="800px")
-          ))
-        ),
-    tabPanel("about",
-     helpText(h3("pcmp demonstrates crosstalk-based interactive graphics for surveying different dimension reduction procedures for data in SingleCellExperiment containers.  The reducedDims component must be populated with several reductions, each including at least 4 dimensions.   Different methods are used in the left and right columns, and different projection components can are used in the top and bottom rows, as selected using the method/top/bot controls.  The 'stratby' button will recolor points according to discrete covariates in the colData of the input object.")),
-     helpText(h3("current input data structure:")),
-     verbatimTextOutput("scedump"),
-     helpText(h3("metadata strings:")),
-     verbatimTextOutput("scedump2"),
-     helpText(h3("pcmpApp can be demonstrated with the object pcmp::sce300xx, an extract from the Allen Brain Atlas RNA-seq data on anterior cingulate cortex (ACC) and primary visual cortex (VIS) brain regions.  Strata were formed using donor (3 levels) and region (2 levels) and 300 cells were sampled at random in each stratum.  The murLung3k app at vjcitn.shinyapps.io uses an extract from the Tabula Muris project data focused on a collection of cells from the mouse lung; the uncorrected data are available in the github repo vjcitn/pcmpshin in data/mouse3kf.rda."))
-   )
-  )
-  )
-  ) 
-# end UI
-
-
-# server for pcmp app
-# defines data flow for a pair of projection types, each shown
-# in two view based on different choices of dimensions
-
-#basicServer <- function(sce) function(input, output, session) {
-SERVER <- function(input, output, session) {
-  requireNamespace("limma")
-#
-# add colnames as a column in colData -- uses .cellid field silently
-#
-#  sce$.cellid = colnames(sce)
-#
-# create a named data.frame combining the reducedDims with the colData
-#
-  rd = reducedDims(sce)
-  nmeth = length(rd) # list of matrices of projected data
-  methnames = names(rd)
-  nrd = names(rd)
-  ncomps = vapply(rd, ncol, numeric(1))
-#  stopifnot(all(ncomps == ncomps[1]))  # requires balanced representation 
-    # of all projections
-  ncomp <- ncomps[1]
-  ncomp = 3 # MUST FIX !
-  indf = data.frame(do.call(cbind, as.list(rd)))
-  cn = paste0(nrd[1], 1:ncomp)
-  if (length(nrd) > 1) {
-      for (j in 2:length(nrd)) cn = c(cn, paste0(nrd[j], 1:ncomp))
-      }
-  colnames(indf) = cn
-  indf <- as.data.frame(cbind(indf, colData(sce)))
-  
-#
-# build the formulas needed for d3scatter
-#
-  fmlist = lapply(methnames, function(x) list())
-  names(fmlist) = methnames
-  for (i in 1:nmeth) {
-   curtags = paste0(methnames[i], 1:ncomp)
-   fmlist[[i]] = lapply(curtags, function(x) as.formula(c("~", x)))
-   names(fmlist[[i]]) = curtags
-  }
-  
-#
-# build the shared data
-#
-  enhDf = reactive({
-   indf$strat = colData(sce)[[input$pickedStrat]]
-   indf$key = 1:nrow(indf)
-   indf
-   })  
-
-  shared_dat <- SharedData$new(enhDf) #enhDf, key=~key)
-
-#
-# set up reactive download entities: table of limma results, table of selected cells with selection sequence number
-#
-    output$downloadData <- downloadHandler(
-       filename = function() {
-         paste('data-', Sys.Date(), '.csv', sep='')
-       },
-       content = function(con) {
-         write.csv(.GlobalEnv$.pcmpTab, con)
-       }
-     )
-    output$downloadData2 <- downloadHandler(
-       filename = function() {
-         paste('data-', Sys.Date(), '.csv', sep='')
-       },
-       content = function(con) {
-         dat = .GlobalEnv$.pcmpSelCells
-         nsel = length(dat)
-         selind = rep(1:nsel,sapply(dat,length))
-         ans = data.frame(group=selind, cellid=unlist(dat))
-         write.csv(ans, con)
-       }
-     )
-
-#
-# for the 'about' tab, show the SCE in use and some metadata
-#
-
-    output$scedump = renderPrint({
-        print(sce)
-    })
-    output$scedump2 = renderPrint({
-        print(metadata(sce)[c("note", "origin")])
-    })
-
-
-#
-# produce the panels
-#
-  output$scatter1 <- renderD3scatter({
-    methx = paste0(input$meth1, input$topx)
-    methy = paste0(input$meth1, input$topy)
-    d3scatter(shared_dat, fmlist[[input$meth1]][[methx]], 
-            fmlist[[input$meth1]][[methy]], ~strat, width = "100%")
-  })
-  output$scatter2 <- renderD3scatter({
-    methx = paste0(input$meth2, input$topx)
-    methy = paste0(input$meth2, input$topy)
-    d3scatter(shared_dat, fmlist[[input$meth2]][[methx]], 
-            fmlist[[input$meth2]][[methy]], ~strat, width = "100%")
-  })
-  output$scatter3 <- renderD3scatter({
-    methx = paste0(input$meth1, input$botx)
-    methy = paste0(input$meth1, input$boty)
-    d3scatter(shared_dat, fmlist[[input$meth1]][[methx]], 
-            fmlist[[input$meth1]][[methy]], ~strat, width = "100%")
-  })
-  output$scatter4 <- renderD3scatter({
-    methx = paste0(input$meth2, input$botx)
-    methy = paste0(input$meth2, input$boty)
-    d3scatter(shared_dat, fmlist[[input$meth2]][[methx]], 
-            fmlist[[input$meth2]][[methy]], ~strat, width = "100%")
-  })
-#  output$try3d <- renderScatterplotThree({
-#    colors = palette(rainbow(30))[ as.numeric(
-#                      factor(colData(sce)[[input$pickedStrat]])) ]
-#    scatterplot3js(PC1, PC2, PC3, crosstalk=shared_dat, brush=TRUE,
-#       color=colors)
-#    })
-
-#
-# collect the information on selections so far
-#
- output$accum = renderPlot({
- invalidateLater(2500)
- ans = list(cells = .GlobalEnv$.pcmpSelCells, limmaTab=.GlobalEnv$.pcmpTab)
- tmp = new("PcmpSels", cellSets=ans$cells, geneTable=ans$limmaTab)
- replay(sce, tmp, input$meth1, input$botx, input$boty) 
- })
-
- output$accum2 = renderPlot({
- invalidateLater(2500)
- ans = list(cells = .GlobalEnv$.pcmpSelCells, limmaTab=.GlobalEnv$.pcmpTab)
- npl = min(c(length(ans[["cells"]]), 4))
- tmp = new("PcmpSels", cellSets=ans$cells, geneTable=ans$limmaTab)
- #replay(sce, tmp, input$meth1, input$botx, input$boty) 
- #opar = par(no.readonly=TRUE)
- #par(mfrow=c(2,2), mar=c(3,3,1,1))
- mym = matrix(1:4,byrow=T,nc=2)
- layout(mym, widths=c(2,2))
- for (i in 1:npl) biplotSel(sce, tmp, which=i, main=paste("selection", i))
- #par(opar)
- })
-    
-#
-# very rudimentary approach to acquiring a signature of a selected group of cells
-# use limma on log-transformed counts comparing selected to non-selected
-# could do something to balance sample sizes ...
-#
-
-output$summary <- DT::renderDataTable({
-    df <- shared_dat$data(withSelection = TRUE) %>%
-      filter(selected_ | is.na(selected_)) %>%
-      mutate(selected_ = NULL)
-    sel=rep(0, ncol(sce))
-    names(sel) = colnames(sce)
-    sel[df$.cellid] = 1
-    mm = stats::model.matrix(~sel, data=data.frame(sel=sel))
-   showNotification(paste("starting table processing", date()), id="limnote")
-    X = log(assay(sce)+1)
-    f1 = lmFit(X, mm)
-    ef1 = eBayes(f1)
-    options(digits=3)
-
-    tt = topTable(ef1, 2, n=20)
-    tt$featid = rownames(tt)
-    if (!(".pcmpSelNum" %in% ls(.GlobalEnv, all.names=TRUE))) assign(".pcmpSelNum", 1, .GlobalEnv)
-      else assign(".pcmpSelNum", .GlobalEnv$.pcmpSelNum + 1, .GlobalEnv)
-    if (!(".pcmpSelCells" %in% ls(.GlobalEnv, all.names=TRUE))) assign(".pcmpSelCells", list(df$.cellid), .GlobalEnv)
-      else assign(".pcmpSelCells", c(.GlobalEnv$.pcmpSelCells, list(df$.cellid)), .GlobalEnv)
-    tt = cbind(tt, selnum=.GlobalEnv$.pcmpSelNum[1])
-    if (!(".pcmpTab" %in% ls(.GlobalEnv, all.names=TRUE))) assign(".pcmpTab", tt, .GlobalEnv)
-      else assign(".pcmpTab", rbind(.GlobalEnv$.pcmpTab, tt, make.row.names=FALSE), .GlobalEnv)
-    ans = DT::formatRound(DT::datatable(tt), 1:7, digits=3)
-   removeNotification(id="limnote")
-    ans
-  })
-
-#
-# prepare stop button
-#
-
-   observe({
-                    if(input$btnSend > 0)
-                        isolate({
-                           stopApp(returnValue=0)
-                        })  
-           })  
-  } # end server
- tmp = runApp(list(ui=UI, server=SERVER))
-#
- ans = list(cells = .GlobalEnv$.pcmpSelCells, limmaTab=.GlobalEnv$.pcmpTab)
- new("PcmpSels", cellSets=ans$cells, geneTable=ans$limmaTab)
-}
-
 rdprops = function(sce) {
  rd = reducedDims(sce)
  rdnames = names(rd)
@@ -610,7 +278,7 @@ See the 'about' tab for more information.", pkgVersion())))
           ))
         ),
     tabPanel("about", id="about",
-     helpText(h3("pcmp demonstrates crosstalk-based interactive graphics for surveying different dimension reduction procedures for data in SingleCellExperiment containers.  The reducedDims component must be populated with several reductions, each including at least 4 dimensions.   Different methods are used in the left and right columns, and different projection components can are used in the top and bottom rows, as selected using the method/top/bot controls.  The 'stratby' button will recolor points according to discrete covariates in the colData of the input object.")),
+     helpText(h3("pcmp demonstrates crosstalk-based interactive graphics for surveying different dimension reduction procedures for data in SingleCellExperiment containers.  The reducedDims component must be populated with several reductions.   Different methods are used in the left and right columns, and different projection components can be displayed in the top and bottom rows, as selected using the method/top/bot controls.  The 'stratby' button will recolor points according to discrete covariates in the colData of the input object.")),
      helpText(h3("current input data structure:")),
      verbatimTextOutput("scedump"),
      helpText(h3("metadata strings:")),
@@ -921,6 +589,7 @@ allParamBindings = function(cl) {
 #' @param proj character(1) name of a reducedDims component of esce
 #' @param dim1 numeric(1) dimension to use as x axis
 #' @param dim2 numeric(1) dimension to use as y axis
+#' @param alpha numeric(1) defaults to .5 for transparency used in geom_point
 #' @export
 plotSelMap = function(esce, proj, dim1=1, dim2=2, alpha=.5) {
  stopifnot("params" %in% names(metadata(esce)))
@@ -952,3 +621,25 @@ getGroup = function (esce, gvname= "group" ) {
 #  plot_ly(x = ~x, y = ~y) %>%
 #  highlight("plotly_selected") %>%
 #  layout(dragmode = "lasso")
+
+#' simple biplot display of transformed expression data for a subset of cluster discriminating genes
+#' @param sce a SingleCellExperiment as produced by pcmpApp
+#' @param selnum numeric(1) the cluster to display
+#' @param assaytx a function to be applied to the assay data
+#' @param ntop numeric(1) number of genes to use in PCA
+#' @param \dots additional parameters to biplot.prcomp, which should
+#' exclude xlabs, expand, cex, and col which are hard coded.
+#' @examples
+#' biplotSel(pcmp::vigAccum, selnum=4, ntop=10)
+#' @export
+biplotSel = function(sce, selnum=1, 
+ assaytx = function(x)log(x+1),  ntop=6, ...) {
+ stopifnot("limmaTabs" %in% names(metadata(sce)))
+ lt = metadata(sce)$limmaTabs
+ stopifnot(selnum %in% unique(lt$selnum))
+ genes = lt$featid[which(lt$selnum==selnum)]
+ dat = assay(sce)[genes[1:ntop], which(getGroup(sce)==selnum)]
+ biplot(prcomp(t(assaytx(dat))), 
+    xlabs=rep(".", ncol(dat)), expand=.8, cex=c(2,1), col=c(1,2), ...)
+}
+

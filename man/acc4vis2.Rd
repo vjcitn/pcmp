@@ -3,20 +3,19 @@
 \docType{data}
 \name{acc4vis2}
 \alias{acc4vis2}
-\title{collection of 6 selections from sce300xx}
-\format{PcmpSels instance}
+\title{collection of 6 selections from reduced sce300xx}
+\format{SingleCellExperiment instance}
 \usage{
 acc4vis2
 }
 \description{
-collection of 6 selections from sce300xx
+collection of 6 selections from reduced sce300xx
+}
+\note{
+gene set used for limmaTabs formed by requiring MAD over samples > 0
 }
 \examples{
 data(acc4vis2)
-data(sce300xx)
-rd = reducedDims(sce300xx)
-plot(rd$TSNE2[,1], rd$TSNE2[,2])
-inds1 = acc4vis2@cellSets[[1]]
-points(rd$TSNE2[ inds1, 1], rd$TSNE2[ inds1, 2], pch=19, col="red")
+plotSelMap(acc4vis2, "TSNE2")
 }
 \keyword{datasets}

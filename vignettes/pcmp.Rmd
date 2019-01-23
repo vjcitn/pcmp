@@ -29,8 +29,9 @@ the following aims
 
 - use Rstudio's crosstalk to foster linked/brushable selections
 in multiple panels
-- record manual selections of clusters as lists of cells
-- provide some statistical information on expression patterns
+- record manual selections of clusters with indicator variables added
+in the colData of the input SingleCellExperiment instance
+- provide statistical information on expression patterns
 that distinguish selected clusters, and on expression-based sources
 of variation within clusters
 - for nuclear sequencing applications, support introduction and
@@ -63,20 +64,23 @@ all 'discrete' variables in the colData of the input
 SingleCellExperiment.
 
 A couple of motivations for this app are visible in the following display,
-which was created by selecting a small group of mostly blue points
-in the lower part of dimensions 3,4 of the UMAP projection.  You
+which was created by selecting a small group of mostly orange points
+in the center of dimensions 1,2 of the 2-dimensional t-SNE projection.  You
 can see dashed box boundaries on the left panel.  The color scheme
-is determined by the stratby variable, in this case PIMMquart,
-a labeling of cells based on the average
-value per cell (over all genes) of the fraction of reads mapping
-to introns.
+is determined by the stratby selection.
+In this display color corresponds to 
+tissue source: orange for primary visual cortex, blue for anterior
+cingulate cortex.
 
-<img src="motiv.png" height="400px"/>
+<img src="blurScat.png" height="400px"/>
 
 Cells are blurred in all projections
-if not selected.  Color in this display is a measure of fraction of
-immature mRNA (average over all genes of ratio of count of intronic reads to total read count for each cell).  The cluster identified in dimensions 3,4 of UMAP projection
-is scattered in the analogous t-SNE projection.
+if not selected.  
+Most of the orange cells in the t-SNE selection
+are clustered together in the UMAP projection on the right,
+but a few are 
+scattered to other groups that seem more remote in the
+UMAP view.
 
 # Installation and execution
 
@@ -112,69 +116,37 @@ have to wait until the table appears to make a new selection.**
 Here is the table that appears after the selTable tab is
 chosen after the selection shown in the previous display.
 
-<img src="demoTable.png" height="400px"/>
+<img src="toptab.png" height="400px"/>
 
 This table is stored in a special object in `.GlobalEnv`
 for later use.
 
 ## Recording selections
 
-### Seeing what has been selected in the session
+### Plotting selections after a session
 
-The `accum` tab allows you to review the scope of the
-series of selections.  Currently the display is fairly
-primitive.  The color scheme is based on R's default mapping, with
-unselected points 'gray', and selection n receiving color n+1.
-The display below shows, in PC3 vs PC4 space, the results
-of 6 selections, one of which (red) was based on a cluster
-found in a different projection.
+`pcmpApp` returns an object of class `SingleCellExperiment`.  The
+package includes a small serialized instance with
+some data from `sce300xx`,  called `vigAccum`.
 
-<img src="accum.png" height="400px"/>
-
-### An object describing selections from a session
-
-`pcmpApp` returns an object of class `PcmpSels`.  The
-package includes a serialized instance, `vigAccum`,
-corresponding to the selections shown above.
-
-There
-are currently two methods defined on this object:
-`cellSets` and `geneTable`.  `cellSets` retrieves
-the colNames entries for cells in each selection
-event.  `geneTable` retrieves the limma/eBayes/topTable
-outputs for "top 20" cluster-discriminating genes.
-
-```{r lkcs}
-vigAccum
-sapply(cellSets(vigAccum), length) # sizes of selections
-head(geneTable(vigAccum),3) # 20 genes for each selection
+```{r lkvi}
+pcmp::vigAccum
 ```
 
-# Assessing expression heterogeneity within selected clusters
-
-We defined a `biplotSel` function to work with the output
-of a session.  A parameter determines how many of the genes
-identified as discriminatory are used to conduct a PCA
-of the expression data from a selected cluster.
-
-```{r lkbp,fig.width=8}
-par(mfrow=c(2,2), mar=c(3,3,1,1))
-xx =sapply(1:4, function(i)biplotSel(sce300xx, vigAccum, i))
-par(mfrow=c(1,1))
+We can plot our selections in a given projection using `plotSelMap`.
+```{r lklksel}
+plotSelMap(pcmp::vigAccum, "TSNE2", 1, 2)
 ```
 
-This phase of the exploration clearly needs additional
-control and enhancement.
+### Biplots of discriminating expression patterns
 
-# Next steps
+Selections can be accompanied with lists of genes
+associated with cluster membership.  By default these
+genes are developed using limma.  The `biplotSel`
+function displays a PCA-based biplot using the expression
+data available for a selected subset of the discriminating
+genes for any cluster.
 
-We want to have biplot-like enhancements of the basic
-clustering projections, to show features and pathways 
-associated with cluster distinction.
-
-More control over within-cluster heterogeneity visualization
-and analysis will be useful.
-
-We also need to consider scalability of the crosstalk infrastructure,
-incorporation of non-rectangular selection methods, dynamic projections
-for 3-d visualization.
+```{r lkbi}
+biplotSel(pcmp::vigAccum, selnum=4, ntop=10)
+```

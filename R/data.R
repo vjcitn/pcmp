@@ -13,22 +13,19 @@
 #' pcmp::sce300xx
 "sce300xx"
 
-#' collection of 6 selections from sce300xx
-#' @format PcmpSels instance
+#' collection of 6 selections from reduced sce300xx
+#' @note gene set used for limmaTabs formed by requiring MAD over samples > 0
+#' @format SingleCellExperiment instance
 #' @examples
 #' data(acc4vis2)
-#' data(sce300xx)
-#' rd = reducedDims(sce300xx)
-#' plot(rd$TSNE2[,1], rd$TSNE2[,2])
-#' inds1 = acc4vis2@cellSets[[1]]
-#' points(rd$TSNE2[ inds1, 1], rd$TSNE2[ inds1, 2], pch=19, col="red")
+#' plotSelMap(acc4vis2, "TSNE2")
 "acc4vis2"
 
 #' collection of selections from sce300xx, corresponding to vignette displays
-#' @format PcmpSels instance
+#' @format SingleCellExperiment instance, produced by pcmpApp
 #' @examples
 #' data(vigAccum)
-#' head(geneTable(vigAccum),3)
+#' head(metadata(vigAccum)$limmaTabs,3)
 "vigAccum"
 
 #' annotation of immgen mouse immune cell resource
