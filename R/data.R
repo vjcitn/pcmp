@@ -34,3 +34,14 @@
 #' @examples
 #' head(immgenAnno)
 "immgenAnno"
+
+#' Antibody-capture "protein" data for the 10x PBMC 10k experiment
+#' @format data.frame
+#' @source \url{https://support.10xgenomics.com/single-cell-gene-expression/datasets/3.0.0/pbmc_10k_protein_v3} 
+#' imported using DropletUtils, subset to the antibody feature measurements,
+#' reducedDims added using addProjections/defaultProjectors modified
+#' to use svd directly with this small featureset, and clustered
+#' using kmeans for 9 clusters (cluster indicator added to colData).
+#' @examples
+#' Ab10k
+"Ab10k"
